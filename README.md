@@ -1,4 +1,6 @@
 # graphqlc-gen-go
+[![Go Report Card](https://goreportcard.com/badge/github.com/samlitowitz/graphqlc-gen-go)](https://goreportcard.com/report/github.com/samlitowitz/graphqlc-gen-go)
+[![Go Reference](https://pkg.go.dev/badge/github.com/samlitowitz/graphqlc-gen-go.svg)](https://pkg.go.dev/github.com/samlitowitz/graphqlc-gen-go)
 
 This is a code generator designed to work with [graphqlc](https://github.com/samlitowitz/graphqlc).
 
