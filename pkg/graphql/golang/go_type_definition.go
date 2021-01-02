@@ -17,3 +17,5 @@ func lcfirst(str string) string {
 	}
 	return ""
 }
+
+// package {name, alias} -> types
