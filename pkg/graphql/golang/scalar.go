@@ -1,13 +1,20 @@
 package golang
 
-import "github.com/samlitowitz/graphqlc/pkg/graphqlc"
+import (
+	"fmt"
+	"github.com/samlitowitz/graphqlc/pkg/graphqlc"
+)
 
 type GoScalarDefinition struct {
 	*graphqlc.ScalarTypeDefinitionDescriptorProto
+	CustomType *ScalarType
 }
 
 func (typDef *GoScalarDefinition) UnqualifiedName() string {
-	return typDef.GetName()
+	if typDef.CustomType == nil {
+		return typDef.GetName()
+	}
+	return fmt.Sprintf("%s.%s", typDef.CustomType.Package, typDef.CustomType.Type)
 }
 
 func (typDef *GoScalarDefinition) Definition() string {

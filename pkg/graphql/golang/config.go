@@ -6,8 +6,14 @@ import (
 )
 
 type Config struct {
+	Package   string                `json:"package,omitempty"`
+	Output    string                `json:"output,omitempty"`
+	ScalarMap map[string]ScalarType `json:"scalarMap,omitempty"`
+}
+
+type ScalarType struct {
 	Package string `json:"package,omitempty"`
-	Output  string `json:"output,omitempty"`
+	Type    string `json:"type,omitempty"`
 }
 
 func LoadConfig(filename string) (*Config, error) {

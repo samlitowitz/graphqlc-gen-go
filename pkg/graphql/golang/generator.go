@@ -84,7 +84,7 @@ func (g *Generator) writeImports(packages []string) {
 			g.Error(err)
 		}
 	}
-	_, err = g.WriteString(")")
+	_, err = g.WriteString(")\n")
 	if err != nil {
 		g.Error(err)
 	}
@@ -102,6 +102,23 @@ func (g *Generator) writeGoTypeDefinitions() {
 			continue
 		}
 
+		importPackages := make([]string, 0)
+
+		for _, scalarDef := range fd.Scalars {
+			var customType *ScalarType
+			if _, ok := g.config.ScalarMap[scalarDef.GetName()]; ok {
+				customType = &ScalarType{}
+				*customType = g.config.ScalarMap[scalarDef.GetName()]
+				importPackages = append(importPackages, customType.Package)
+			}
+			if typDef, ok := g.typeMap[scalarDef.GetName()]; !ok || typDef == nil {
+				def := &GoScalarDefinition{
+					ScalarTypeDefinitionDescriptorProto: scalarDef,
+					CustomType:                          customType,
+				}
+				g.typeMap[scalarDef.GetName()] = def
+			}
+		}
 		for _, enumDef := range fd.Enums {
 			if typDef, ok := g.typeMap[enumDef.GetName()]; !ok || typDef == nil {
 				def := &GoEnumDefinition{
@@ -152,6 +169,9 @@ func (g *Generator) writeGoTypeDefinitions() {
 
 		for name, typDef := range g.typeMap {
 			switch def := typDef.(type) {
+			case *GoEnumDefinition:
+				g.typeMap[name] = def
+
 			case *GoInterfaceDefinition:
 				def.TypeMap = g.typeMap
 				g.typeMap[name] = def
@@ -163,10 +183,10 @@ func (g *Generator) writeGoTypeDefinitions() {
 			case *GoObjectDefinition:
 				def.TypeMap = g.typeMap
 				g.typeMap[name] = def
-
 			}
 		}
 
+		g.writeImports(importPackages)
 		for _, typDef := range g.typeMap {
 			g.WriteString(typDef.Definition() + "\n")
 		}

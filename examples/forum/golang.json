@@ -1,4 +1,10 @@
 {
-  "Package": "main",
-  "Output": "./"
+  "package": "main",
+  "output": "./",
+  "scalarMap": {
+    "DateTime": {
+      "package": "time",
+      "type": "Time"
+    }
+  }
 }
