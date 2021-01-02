@@ -5,7 +5,7 @@
 This is a code generator designed to work with [graphqlc](https://github.com/samlitowitz/graphqlc).
 
 Generate Go definitions from a GraphQL schema.
-See the [examples/](https://github.com/samlitowitz/graphqlc-gen-relayify/tree/master/examples) directory for more... examples.
+See the [examples/](examples/) directory for more... examples.
 
 # Installation
 Install [graphqlc](https://github.com/samlitowitz/graphqlc).
