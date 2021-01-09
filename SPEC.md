@@ -155,6 +155,100 @@ Not currently supported
 # Repository Interfaces
 Implement Go interfaces to facilitate GraphQL queries and mutations.
 
+For each GraphQL object with a field that takes arguments we create a repository (Go interface) for the matching
+ Go struct which takes the equivalent Go typed input and returns the equivalent Go typed output.
+
+GraphQL
+```graphql
+interface Node {
+    id: ID!
+}
+
+type Query {
+    node(id: ID!): Node
+}
+```
+
+Go
+```go
+type Node interface {
+    isNode()
+}
+type QueryRepository interface {
+    Node(id string) (Node, error)
+}
+```
+
+GraphQL
+```graphql
+type User {
+    id: ID!
+    name: String!
+    email: String!
+}
+
+type Query {
+    user(id: ID!): User
+}
+```
+
+Go
+```go
+type User struct {
+    Id string
+    Name string
+    Email string
+}
+
+type QueryRepository interface {
+    User(id string) (User, error)
+}
+```
+
+GraphQL
+```graphql
+type User {
+    id: ID!
+    name: String!
+    email: String!
+}
+
+input CreateUserInput {
+    name: String!
+    email: String!
+}
+
+type CreateUserOutput {
+    user: User!
+}
+
+type Mutation {
+    CreateUser(input: CreateUserInput!): CreateUserOutput!
+}
+```
+
+Go
+```go
+type User struct {
+    Id string
+    Name string
+    Email string
+}
+
+type CreateUserInput struct {
+    Name string
+    Email string
+}
+
+type CreateUserOutput struct {
+    User User
+}
+
+type MutationRepository interface {
+    CreateUser(input CreateUserInput) (CreateUserOutput, error)
+}
+```
+
 # Go GraphQL Schema Definition
 Implement a Go mapping of the GraphQL schema using [graphql-go/graphql](https://github.com/graphql-go/graphql).
 
