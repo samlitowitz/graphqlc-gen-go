@@ -153,6 +153,7 @@ GraphQL non-null types are ignored.
 Not currently supported
 
 # Repository Interfaces
+Implement Go interfaces to facilitate GraphQL queries and mutations.
 
 # Go GraphQL Schema Definition
 Implement a Go mapping of the GraphQL schema using [graphql-go/graphql](https://github.com/graphql-go/graphql).
