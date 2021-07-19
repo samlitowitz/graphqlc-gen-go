@@ -1,6 +1,5 @@
 {
   "package": "main",
-  "output": "./",
   "scalarMap": {
     "DateTime": {
       "package": "time",
