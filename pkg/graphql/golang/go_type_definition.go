@@ -1,12 +1,14 @@
 package golang
 
 import (
+	"go/ast"
 	"unicode"
 )
 
 type GoTypeDefinition interface {
-	UnqualifiedName() string
-	Definition() string
+	GenDecl() *ast.GenDecl
+	Ident() *ast.Ident
+	File() *ast.File
 }
 
 
