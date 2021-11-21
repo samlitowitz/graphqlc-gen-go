@@ -46,7 +46,7 @@ func (g *Generator) GenerateAllFiles() {
 	g.writeFileHeader()
 	g.writeGoTypeDefinitions()
 	g.Response.File = append(g.Response.File, &graphqlc.CodeGeneratorResponse_File{
-		Name:    g.config.Output + "types.go",
+		Name:    g.config.Output + "_go.go",
 		Content: g.String(),
 	})
 
@@ -56,7 +56,7 @@ func (g *Generator) GenerateAllFiles() {
 	g.writeFileHeader()
 	g.writeImports([]string{"github.com/graphql-go/graphql"})
 	g.Response.File = append(g.Response.File, &graphqlc.CodeGeneratorResponse_File{
-		Name:    g.config.Output + "schema.go",
+		Name:    g.config.Output + "_graphql.go",
 		Content: g.String(),
 	})
 }
