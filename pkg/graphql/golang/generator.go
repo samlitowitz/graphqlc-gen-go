@@ -41,7 +41,7 @@ func (g *Generator) CommandLineArguments(parameter string) {
 }
 
 func (g *Generator) GenerateAllFiles() {
-	// Go type definitions
+	// Go definitions (types and repository interfaces)
 	g.Reset()
 	g.writeFileHeader()
 	g.writeGoTypeDefinitions()
@@ -50,7 +50,7 @@ func (g *Generator) GenerateAllFiles() {
 		Content: g.String(),
 	})
 
-	// Go schema definition
+	// GraphQL definitions (types and schema)
 	// Using https://github.com/graphql-go/graphql
 	g.Reset()
 	g.writeFileHeader()
