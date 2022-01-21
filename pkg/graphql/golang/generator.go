@@ -2,6 +2,7 @@ package golang
 
 import (
 	"github.com/samlitowitz/graphqlc-gen-echo/pkg/graphqlc/echo"
+	"github.com/samlitowitz/graphqlc-gen-go/pkg/graphql/golang/type"
 	"github.com/samlitowitz/graphqlc/pkg/graphqlc"
 )
 
@@ -112,7 +113,7 @@ func (g *Generator) writeGoTypeDefinitions() {
 				importPackages = append(importPackages, customType.Package)
 			}
 			if typDef, ok := g.typeMap[scalarDef.GetName()]; !ok || typDef == nil {
-				def := &GoScalarDefinition{
+				def := &_type.GoScalarDefinition{
 					ScalarTypeDefinitionDescriptorProto: scalarDef,
 					CustomType:                          customType,
 				}
@@ -121,7 +122,7 @@ func (g *Generator) writeGoTypeDefinitions() {
 		}
 		for _, enumDef := range fd.Enums {
 			if typDef, ok := g.typeMap[enumDef.GetName()]; !ok || typDef == nil {
-				def := &GoEnumDefinition{
+				def := &_type.GoEnumDefinition{
 					EnumTypeDefinitionDescriptorProto: enumDef,
 				}
 				g.typeMap[enumDef.GetName()] = def
@@ -129,7 +130,7 @@ func (g *Generator) writeGoTypeDefinitions() {
 		}
 		for _, ifaceDef := range fd.Interfaces {
 			if typDef, ok := g.typeMap[ifaceDef.GetName()]; !ok || typDef == nil {
-				def := &GoInterfaceDefinition{
+				def := &_type.GoInterfaceDefinition{
 					InterfaceTypeDefinitionDescriptorProto: ifaceDef,
 				}
 				g.typeMap[ifaceDef.GetName()] = def
@@ -137,7 +138,7 @@ func (g *Generator) writeGoTypeDefinitions() {
 		}
 		for _, iObjDef := range fd.InputObjects {
 			if typDef, ok := g.typeMap[iObjDef.GetName()]; !ok || typDef == nil {
-				def := &GoInputObjectDefinition{
+				def := &_type.GoInputObjectDefinition{
 					InputObjectTypeDefinitionDescriptorProto: iObjDef,
 				}
 				g.typeMap[iObjDef.GetName()] = def
@@ -151,7 +152,7 @@ func (g *Generator) writeGoTypeDefinitions() {
 				continue
 			}
 			if typDef, ok := g.typeMap[objDef.GetName()]; !ok || typDef == nil {
-				def := &GoObjectDefinition{
+				def := &_type.GoObjectDefinition{
 					ObjectTypeDefinitionDescriptorProto: objDef,
 				}
 				g.typeMap[objDef.GetName()] = def
@@ -159,7 +160,7 @@ func (g *Generator) writeGoTypeDefinitions() {
 		}
 		for _, unionDef := range fd.Unions {
 			if typDef, ok := g.typeMap[unionDef.GetName()]; !ok || typDef == nil {
-				def := &GoUnionDefinition{
+				def := &_type.GoUnionDefinition{
 					UnionTypeDefinitionDescriptorProto: unionDef,
 				}
 				g.typeMap[unionDef.GetName()] = def
@@ -169,18 +170,18 @@ func (g *Generator) writeGoTypeDefinitions() {
 
 		for name, typDef := range g.typeMap {
 			switch def := typDef.(type) {
-			case *GoEnumDefinition:
+			case *_type.GoEnumDefinition:
 				g.typeMap[name] = def
 
-			case *GoInterfaceDefinition:
+			case *_type.GoInterfaceDefinition:
 				def.TypeMap = g.typeMap
 				g.typeMap[name] = def
 
-			case *GoInputObjectDefinition:
+			case *_type.GoInputObjectDefinition:
 				def.TypeMap = g.typeMap
 				g.typeMap[name] = def
 
-			case *GoObjectDefinition:
+			case *_type.GoObjectDefinition:
 				def.TypeMap = g.typeMap
 				g.typeMap[name] = def
 			}
@@ -203,27 +204,27 @@ func buildGenFilesMap(filesToGenerate []string) map[string]bool {
 
 func buildBaseTypeMap() map[string]GoTypeDefinition {
 	return map[string]GoTypeDefinition{
-		"Int": &GoScalarDefinition{
+		"Int": &_type.GoScalarDefinition{
 			ScalarTypeDefinitionDescriptorProto: &graphqlc.ScalarTypeDefinitionDescriptorProto{
 				Name: "string",
 			},
 		},
-		"Float": &GoScalarDefinition{
+		"Float": &_type.GoScalarDefinition{
 			ScalarTypeDefinitionDescriptorProto: &graphqlc.ScalarTypeDefinitionDescriptorProto{
 				Name: "float64",
 			},
 		},
-		"String": &GoScalarDefinition{
+		"String": &_type.GoScalarDefinition{
 			ScalarTypeDefinitionDescriptorProto: &graphqlc.ScalarTypeDefinitionDescriptorProto{
 				Name: "string",
 			},
 		},
-		"Boolean": &GoScalarDefinition{
+		"Boolean": &_type.GoScalarDefinition{
 			ScalarTypeDefinitionDescriptorProto: &graphqlc.ScalarTypeDefinitionDescriptorProto{
 				Name: "bool",
 			},
 		},
-		"ID": &GoScalarDefinition{
+		"ID": &_type.GoScalarDefinition{
 			ScalarTypeDefinitionDescriptorProto: &graphqlc.ScalarTypeDefinitionDescriptorProto{
 				Name: "string",
 			},

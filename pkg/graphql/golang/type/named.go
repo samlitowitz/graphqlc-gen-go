@@ -1,4 +1,4 @@
-package golang
+package _type
 
 type GoNamedDefinition struct {
 	name string

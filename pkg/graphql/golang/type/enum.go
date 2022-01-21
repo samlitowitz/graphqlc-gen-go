@@ -1,9 +1,9 @@
-package golang
+package _type
 
 import (
+	"fmt"
 	"github.com/samlitowitz/graphqlc/pkg/graphqlc"
 	"strings"
-	"fmt"
 )
 
 type GoEnumDefinition struct {

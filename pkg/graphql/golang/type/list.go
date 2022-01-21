@@ -1,20 +1,21 @@
-package golang
+package _type
 
 import (
 	"fmt"
+	"github.com/samlitowitz/graphqlc-gen-go/pkg/graphql/golang"
 	"github.com/samlitowitz/graphqlc/pkg/graphqlc"
 )
 
 type GoListDefinition struct {
 	*graphqlc.ListTypeDescriptorProto
 
-	typeMap map[string]GoTypeDefinition
-	base    GoTypeDefinition
+	typeMap map[string]golang.GoTypeDefinition
+	base    golang.GoTypeDefinition
 }
 
 func (typDef *GoListDefinition) UnqualifiedName() string {
 	if typDef.typeMap == nil {
-		typDef.typeMap = make(map[string]GoTypeDefinition)
+		typDef.typeMap = make(map[string]golang.GoTypeDefinition)
 	}
 
 	if typDef.base == nil {

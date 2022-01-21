@@ -1,13 +1,14 @@
-package golang
+package _type
 
 import (
 	"fmt"
+	"github.com/samlitowitz/graphqlc-gen-go/pkg/graphql/golang"
 	"github.com/samlitowitz/graphqlc/pkg/graphqlc"
 )
 
 type GoScalarDefinition struct {
 	*graphqlc.ScalarTypeDefinitionDescriptorProto
-	CustomType *ScalarType
+	CustomType *golang.ScalarType
 }
 
 func (typDef *GoScalarDefinition) UnqualifiedName() string {
@@ -21,7 +22,7 @@ func (typDef *GoScalarDefinition) Definition() string {
 	return ""
 }
 
-func buildTypeGoTypeDefinition(typDef *graphqlc.TypeDescriptorProto, typeMap map[string]GoTypeDefinition) GoTypeDefinition {
+func buildTypeGoTypeDefinition(typDef *graphqlc.TypeDescriptorProto, typeMap map[string]golang.GoTypeDefinition) golang.GoTypeDefinition {
 	switch def := typDef.Type.(type) {
 	case *graphqlc.TypeDescriptorProto_ListType:
 		return &GoListDefinition{

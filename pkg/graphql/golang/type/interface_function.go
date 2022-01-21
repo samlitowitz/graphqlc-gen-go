@@ -1,15 +1,16 @@
-package golang
+package _type
 
 import (
+	"fmt"
+	"github.com/samlitowitz/graphqlc-gen-go/pkg/graphql/golang"
 	"github.com/samlitowitz/graphqlc/pkg/graphqlc"
 	"strings"
-	"fmt"
 )
 
 type GoInterfaceFunctionDefinition struct {
 	name    string
 	typ     *graphqlc.TypeDescriptorProto
-	typeMap map[string]GoTypeDefinition
+	typeMap map[string]golang.GoTypeDefinition
 }
 
 func (typDef *GoInterfaceFunctionDefinition) UnqualifiedName() string {
@@ -17,7 +18,7 @@ func (typDef *GoInterfaceFunctionDefinition) UnqualifiedName() string {
 }
 
 func (typDef *GoInterfaceFunctionDefinition) Definition() string {
-	var fieldGoTypDef = buildTypeGoTypeDefinition(typDef.typ, typDef.typeMap)
+	var fieldGoTypDef = _type.buildTypeGoTypeDefinition(typDef.typ, typDef.typeMap)
 	if fieldGoTypDef == nil {
 		return ""
 	}
@@ -27,7 +28,7 @@ func (typDef *GoInterfaceFunctionDefinition) Definition() string {
 type GoInputObjectDefinition struct {
 	*graphqlc.InputObjectTypeDefinitionDescriptorProto
 
-	TypeMap map[string]GoTypeDefinition
+	TypeMap map[string]golang.GoTypeDefinition
 }
 
 func (typDef *GoInputObjectDefinition) UnqualifiedName() string {
@@ -36,13 +37,13 @@ func (typDef *GoInputObjectDefinition) UnqualifiedName() string {
 
 func (typDef *GoInputObjectDefinition) Definition() string {
 	if typDef.TypeMap == nil {
-		typDef.TypeMap = make(map[string]GoTypeDefinition)
+		typDef.TypeMap = make(map[string]golang.GoTypeDefinition)
 	}
 
 	fields := make([]string, 0)
 
 	for _, fieldDef := range typDef.Fields {
-		var fieldGoTypDef = buildTypeGoTypeDefinition(fieldDef.Type, typDef.TypeMap)
+		var fieldGoTypDef = _type.buildTypeGoTypeDefinition(fieldDef.Type, typDef.TypeMap)
 		if fieldGoTypDef == nil {
 			continue
 		}
