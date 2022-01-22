@@ -2,7 +2,6 @@ package _type
 
 import (
 	"fmt"
-	"github.com/samlitowitz/graphqlc-gen-go/pkg/graphql/golang"
 	"github.com/samlitowitz/graphqlc/pkg/graphqlc"
 	"strings"
 )
@@ -10,7 +9,7 @@ import (
 type GoInterfaceDefinition struct {
 	*graphqlc.InterfaceTypeDefinitionDescriptorProto
 
-	TypeMap map[string]golang.GoTypeDefinition
+	TypeMap map[string]Definition
 }
 
 func (typDef *GoInterfaceDefinition) UnqualifiedName() string {
@@ -19,7 +18,7 @@ func (typDef *GoInterfaceDefinition) UnqualifiedName() string {
 
 func (typDef *GoInterfaceDefinition) Definition() string {
 	if typDef.TypeMap == nil {
-		typDef.TypeMap = make(map[string]golang.GoTypeDefinition)
+		typDef.TypeMap = make(map[string]Definition)
 	}
 	fnDefs := typDef.functionDefinitions(typDef.TypeMap)
 	fields := make([]string, 0)
@@ -35,11 +34,11 @@ func (typDef *GoInterfaceDefinition) Definition() string {
 	)
 }
 
-func (typDef *GoInterfaceDefinition) functionDefinitions(typeMap map[string]golang.GoTypeDefinition) []*golang.GoInterfaceFunctionDefinition {
-	fnDefs := make([]*golang.GoInterfaceFunctionDefinition, 0)
+func (typDef *GoInterfaceDefinition) functionDefinitions(typeMap map[string]Definition) []*GoInterfaceFunctionDefinition {
+	fnDefs := make([]*GoInterfaceFunctionDefinition, 0)
 
 	for _, fieldDef := range typDef.Fields {
-		fnDefs = append(fnDefs, &golang.GoInterfaceFunctionDefinition{
+		fnDefs = append(fnDefs, &GoInterfaceFunctionDefinition{
 			name:    strings.Title(fieldDef.Name),
 			typ:     fieldDef.Type,
 			typeMap: typeMap,

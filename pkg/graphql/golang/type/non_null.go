@@ -1,21 +1,20 @@
 package _type
 
 import (
-	"github.com/samlitowitz/graphqlc-gen-go/pkg/graphql/golang"
 	"github.com/samlitowitz/graphqlc/pkg/graphqlc"
 )
 
 type GoNonNullDefinition struct {
 	*graphqlc.NonNullTypeDescriptorProto
 
-	typeMap map[string]golang.GoTypeDefinition
+	typeMap map[string]Definition
 
-	base golang.GoTypeDefinition
+	base Definition
 }
 
 func (typDef *GoNonNullDefinition) UnqualifiedName() string {
 	if typDef.typeMap == nil {
-		typDef.typeMap = make(map[string]golang.GoTypeDefinition)
+		typDef.typeMap = make(map[string]Definition)
 	}
 	if typDef.base == nil {
 		switch def := typDef.Type.(type) {

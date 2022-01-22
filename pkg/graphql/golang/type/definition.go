@@ -1,10 +1,10 @@
-package golang
+package _type
 
 import (
 	"unicode"
 )
 
-type GoTypeDefinition interface {
+type Definition interface {
 	UnqualifiedName() string
 	Definition() string
 }

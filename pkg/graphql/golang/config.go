@@ -2,18 +2,14 @@ package golang
 
 import (
 	"encoding/json"
+	cfgPkg "github.com/samlitowitz/graphqlc-gen-go/pkg/graphql/golang/config"
 	"io/ioutil"
 )
 
 type Config struct {
 	Package   string                `json:"package,omitempty"`
 	Output    string                `json:"output,omitempty"`
-	ScalarMap map[string]ScalarType `json:"scalarMap,omitempty"`
-}
-
-type ScalarType struct {
-	Package string `json:"package,omitempty"`
-	Type    string `json:"type,omitempty"`
+	ScalarMap map[string]cfgPkg.ScalarType `json:"scalarMap,omitempty"`
 }
 
 func LoadConfig(filename string) (*Config, error) {

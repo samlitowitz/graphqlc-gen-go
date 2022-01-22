@@ -2,7 +2,8 @@ package golang
 
 import (
 	"github.com/samlitowitz/graphqlc-gen-echo/pkg/graphqlc/echo"
-	"github.com/samlitowitz/graphqlc-gen-go/pkg/graphql/golang/type"
+	cfgPkg "github.com/samlitowitz/graphqlc-gen-go/pkg/graphql/golang/config"
+	typPkg "github.com/samlitowitz/graphqlc-gen-go/pkg/graphql/golang/type"
 	"github.com/samlitowitz/graphqlc/pkg/graphqlc"
 )
 
@@ -11,7 +12,7 @@ type Generator struct {
 
 	config   *Config
 	genFiles map[string]bool
-	typeMap  map[string]GoTypeDefinition
+	typeMap  map[string]typPkg.Definition
 }
 
 func New() *Generator {
@@ -106,14 +107,14 @@ func (g *Generator) writeGoTypeDefinitions() {
 		importPackages := make([]string, 0)
 
 		for _, scalarDef := range fd.Scalars {
-			var customType *ScalarType
+			var customType *cfgPkg.ScalarType
 			if _, ok := g.config.ScalarMap[scalarDef.GetName()]; ok {
-				customType = &ScalarType{}
+				customType = &cfgPkg.ScalarType{}
 				*customType = g.config.ScalarMap[scalarDef.GetName()]
 				importPackages = append(importPackages, customType.Package)
 			}
 			if typDef, ok := g.typeMap[scalarDef.GetName()]; !ok || typDef == nil {
-				def := &_type.GoScalarDefinition{
+				def := &typPkg.GoScalarDefinition{
 					ScalarTypeDefinitionDescriptorProto: scalarDef,
 					CustomType:                          customType,
 				}
@@ -122,7 +123,7 @@ func (g *Generator) writeGoTypeDefinitions() {
 		}
 		for _, enumDef := range fd.Enums {
 			if typDef, ok := g.typeMap[enumDef.GetName()]; !ok || typDef == nil {
-				def := &_type.GoEnumDefinition{
+				def := &typPkg.GoEnumDefinition{
 					EnumTypeDefinitionDescriptorProto: enumDef,
 				}
 				g.typeMap[enumDef.GetName()] = def
@@ -130,7 +131,7 @@ func (g *Generator) writeGoTypeDefinitions() {
 		}
 		for _, ifaceDef := range fd.Interfaces {
 			if typDef, ok := g.typeMap[ifaceDef.GetName()]; !ok || typDef == nil {
-				def := &_type.GoInterfaceDefinition{
+				def := &typPkg.GoInterfaceDefinition{
 					InterfaceTypeDefinitionDescriptorProto: ifaceDef,
 				}
 				g.typeMap[ifaceDef.GetName()] = def
@@ -138,7 +139,7 @@ func (g *Generator) writeGoTypeDefinitions() {
 		}
 		for _, iObjDef := range fd.InputObjects {
 			if typDef, ok := g.typeMap[iObjDef.GetName()]; !ok || typDef == nil {
-				def := &_type.GoInputObjectDefinition{
+				def := &typPkg.GoInputObjectDefinition{
 					InputObjectTypeDefinitionDescriptorProto: iObjDef,
 				}
 				g.typeMap[iObjDef.GetName()] = def
@@ -152,7 +153,7 @@ func (g *Generator) writeGoTypeDefinitions() {
 				continue
 			}
 			if typDef, ok := g.typeMap[objDef.GetName()]; !ok || typDef == nil {
-				def := &_type.GoObjectDefinition{
+				def := &typPkg.GoObjectDefinition{
 					ObjectTypeDefinitionDescriptorProto: objDef,
 				}
 				g.typeMap[objDef.GetName()] = def
@@ -160,7 +161,7 @@ func (g *Generator) writeGoTypeDefinitions() {
 		}
 		for _, unionDef := range fd.Unions {
 			if typDef, ok := g.typeMap[unionDef.GetName()]; !ok || typDef == nil {
-				def := &_type.GoUnionDefinition{
+				def := &typPkg.GoUnionDefinition{
 					UnionTypeDefinitionDescriptorProto: unionDef,
 				}
 				g.typeMap[unionDef.GetName()] = def
@@ -170,18 +171,18 @@ func (g *Generator) writeGoTypeDefinitions() {
 
 		for name, typDef := range g.typeMap {
 			switch def := typDef.(type) {
-			case *_type.GoEnumDefinition:
+			case *typPkg.GoEnumDefinition:
 				g.typeMap[name] = def
 
-			case *_type.GoInterfaceDefinition:
+			case *typPkg.GoInterfaceDefinition:
 				def.TypeMap = g.typeMap
 				g.typeMap[name] = def
 
-			case *_type.GoInputObjectDefinition:
+			case *typPkg.GoInputObjectDefinition:
 				def.TypeMap = g.typeMap
 				g.typeMap[name] = def
 
-			case *_type.GoObjectDefinition:
+			case *typPkg.GoObjectDefinition:
 				def.TypeMap = g.typeMap
 				g.typeMap[name] = def
 			}
@@ -202,29 +203,29 @@ func buildGenFilesMap(filesToGenerate []string) map[string]bool {
 	return genFiles
 }
 
-func buildBaseTypeMap() map[string]GoTypeDefinition {
-	return map[string]GoTypeDefinition{
-		"Int": &_type.GoScalarDefinition{
+func buildBaseTypeMap() map[string]typPkg.Definition {
+	return map[string]typPkg.Definition{
+		"Int": &typPkg.GoScalarDefinition{
 			ScalarTypeDefinitionDescriptorProto: &graphqlc.ScalarTypeDefinitionDescriptorProto{
 				Name: "string",
 			},
 		},
-		"Float": &_type.GoScalarDefinition{
+		"Float": &typPkg.GoScalarDefinition{
 			ScalarTypeDefinitionDescriptorProto: &graphqlc.ScalarTypeDefinitionDescriptorProto{
 				Name: "float64",
 			},
 		},
-		"String": &_type.GoScalarDefinition{
+		"String": &typPkg.GoScalarDefinition{
 			ScalarTypeDefinitionDescriptorProto: &graphqlc.ScalarTypeDefinitionDescriptorProto{
 				Name: "string",
 			},
 		},
-		"Boolean": &_type.GoScalarDefinition{
+		"Boolean": &typPkg.GoScalarDefinition{
 			ScalarTypeDefinitionDescriptorProto: &graphqlc.ScalarTypeDefinitionDescriptorProto{
 				Name: "bool",
 			},
 		},
-		"ID": &_type.GoScalarDefinition{
+		"ID": &typPkg.GoScalarDefinition{
 			ScalarTypeDefinitionDescriptorProto: &graphqlc.ScalarTypeDefinitionDescriptorProto{
 				Name: "string",
 			},
