@@ -47,18 +47,18 @@ func (g *Generator) GenerateAllFiles() {
 	f := jen.NewFile(g.config.Package)
 	g.writeTypeDefinitions(f)
 	g.Response.File = append(g.Response.File, &graphqlc.CodeGeneratorResponse_File{
-		Name:    g.config.Output + "types.go",
+		Name:    g.config.OutputPrefix + "_types.go",
 		Content: g.String(),
 	})
 
 	// Go repository interface definitions
-	//g.Reset()
-	//g.writeFileHeader()
-	//g.writeRepositoryInterfaces()
-	//g.Response.File = append(g.Response.File, &graphqlc.CodeGeneratorResponse_File{
-	//	Name:    g.config.Output + "_types.go",
-	//	Content: g.String(),
-	//})
+	g.Reset()
+	f = jen.NewFile(g.config.Package)
+	g.writeRepositoryInterfaces(f)
+	g.Response.File = append(g.Response.File, &graphqlc.CodeGeneratorResponse_File{
+		Name:    g.config.OutputPrefix + "_repositories.go",
+		Content: g.String(),
+	})
 
 	// GraphQL definitions (types and schema)
 	// Using https://github.com/graphql-go/graphql
@@ -66,49 +66,57 @@ func (g *Generator) GenerateAllFiles() {
 	//g.writeFileHeader()
 	//g.writeImports([]string{"github.com/graphql-go/graphql"})
 	//g.Response.File = append(g.Response.File, &graphqlc.CodeGeneratorResponse_File{
-	//	Name:    g.config.Output + "_graphql.go",
+	//	Name:    g.config.OutputPrefix + "_graphql.go",
 	//	Content: g.String(),
 	//})
 }
 
-//func (g *Generator) writeRepositoryInterfaces() {
-//	if g.genFiles == nil {
-//		g.genFiles = buildGenFilesMap(g.Request.FileToGenerate)
-//	}
-//
-//	repoDefs := make(map[string]map[string]*repository.Function)
-//
-//	for _, fd := range g.Request.GraphqlFile {
-//		if _, ok := g.genFiles[fd.Name]; !ok {
-//			continue
-//		}
-//		for _, objDef := range fd.Objects {
-//			if _, ok := g.typeMap[objDef.GetName()]; !ok {
-//				g.Error(fmt.Errorf("%s missing type definition", objDef.GetName()))
-//			}
-//
-//			for _, fieldDef := range objDef.Fields {
-//				if len(fieldDef.Arguments) == 0 {
-//					continue
-//				}
-//				repoFnDefs, ok := repoDefs[fieldDef.Type.String()]
-//				if !ok {
-//					repoDef := repository.NewDefinition(objDef.G)
-//					repoDefs[objDef.GetName()] = repoDef
-//				}
-//				repoFnDef := &repository.Function{FieldDefinitionDescriptorProto: fieldDef}
-//				if _, ok := repoFnDefs[string(repoFnDef.Hash())]; ok {
-//					continue
-//				}
-//				repoFnDefs[string(repoFnDef.Hash())] = repoFnDef
-//			}
-//		}
-//	}
-//
-//	for typName, repoFnDefs := range repoDefs {
-//
-//	}
-//}
+func (g *Generator) writeRepositoryInterfaces(f *jen.File) {
+	if g.genFiles == nil {
+		g.genFiles = buildGenFilesMap(g.Request.FileToGenerate)
+	}
+	repoFnsByType := make(map[string]map[string]*jen.Statement)
+	for _, fd := range g.Request.GraphqlFile {
+		if _, ok := g.genFiles[fd.Name]; !ok {
+			continue
+		}
+		for _, objDef := range fd.GetObjects() {
+			fields := objDef.GetFields()
+			for _, field := range fields {
+				fieldArgs := field.GetArguments()
+				if len(fieldArgs) == 0 {
+					continue
+				}
+				fieldTypeName := extractNamedType(field.GetType())
+				if _, ok := repoFnsByType[fieldTypeName]; !ok {
+					repoFnsByType[fieldTypeName] = make(map[string]*jen.Statement)
+				}
+				fieldName := field.GetName()
+				if _, ok := repoFnsByType[fieldTypeName][fieldName]; !ok {
+					argStmts := make(jen.Statement, 0, len(fieldArgs))
+					for _, fieldArg := range fieldArgs {
+						argStmts = append(
+							argStmts,
+							jen.Id(fieldArg.GetName()).Add(getGoType(fieldArg.GetType(), g.config.ScalarMap, true)),
+						)
+					}
+
+					stmt := jen.Id(strings.Title(fieldName)).Params(argStmts...).Add(getGoType(field.GetType(), g.config.ScalarMap, true))
+					repoFnsByType[fieldTypeName][fieldName] = stmt
+				}
+			}
+		}
+	}
+
+	for typ, repoFns := range repoFnsByType {
+		fnStmts := make(jen.Statement, 0, len(repoFns))
+		for _, fnStmt := range repoFns {
+			fnStmts = append(fnStmts, fnStmt)
+		}
+		f.Type().Id(typ + "Repository").Interface(fnStmts...)
+	}
+	f.Render(g)
+}
 
 func (g *Generator) writeTypeDefinitions(f *jen.File) {
 	if g.genFiles == nil {
