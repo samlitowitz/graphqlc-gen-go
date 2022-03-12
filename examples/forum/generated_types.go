@@ -10,6 +10,9 @@ const (
 	UserRole_MEMBER        UserRole = 2
 )
 
+type Content interface {
+	isContent()
+}
 type Node interface {
 	GetId() string
 }
@@ -58,6 +61,7 @@ type Post struct {
 func (o Post) GetId() string {
 	return o.Id
 }
+func (o Post) isContent() {}
 
 type Reply struct {
 	Author    User
@@ -70,6 +74,7 @@ type Reply struct {
 func (o Reply) GetId() string {
 	return o.Id
 }
+func (o Reply) isContent() {}
 
 type PageInfo struct {
 	HasPreviousPage bool

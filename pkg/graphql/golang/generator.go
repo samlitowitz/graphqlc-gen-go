@@ -148,7 +148,7 @@ func (g *Generator) writeTypeDefinitions(f *jen.File) {
 		g.genFiles = buildGenFilesMap(g.Request.FileToGenerate)
 	}
 
-	//g.typeMap = buildBaseTypeMap()
+	unionTypesMap := make(map[string]map[string]struct{})
 
 	for _, fd := range g.Request.GraphqlFile {
 		if _, ok := g.genFiles[fd.Name]; !ok {
@@ -166,6 +166,20 @@ func (g *Generator) writeTypeDefinitions(f *jen.File) {
 				)
 			}
 			f.Const().Defs(valDefs...)
+		}
+		for _, unionDef := range fd.Unions {
+			membersTypes := unionDef.GetMemberTypes()
+
+			for _, memberType := range membersTypes {
+				if _, ok := unionTypesMap[memberType.GetName()]; !ok {
+					unionTypesMap[memberType.GetName()] = make(map[string]struct{})
+				}
+				unionTypesMap[memberType.GetName()][unionDef.GetName()] = struct{}{}
+			}
+
+			f.Type().Id(unionDef.GetName()).Interface(
+				jen.Id("is" + unionDef.GetName()).Params(),
+			)
 		}
 		for _, ifaceDef := range fd.GetInterfaces() {
 			fields := ifaceDef.GetFields()
@@ -216,6 +230,17 @@ func (g *Generator) writeTypeDefinitions(f *jen.File) {
 						),
 					)
 				}
+			}
+
+			unions, ok := unionTypesMap[objDef.GetName()]
+			if !ok {
+				continue
+			}
+
+			for union, _  := range unions {
+				f.Func().Params(
+					jen.Id("o").Id(objDef.GetName()),
+				).Id("is" + union).Params().Block()
 			}
 		}
 		//for _, unionDef := range fd.Unions {
@@ -300,14 +325,29 @@ func getGoType(typDef *graphqlc.TypeDescriptorProto, customTypes map[string]cfgP
 	case *graphqlc.TypeDescriptorProto_NamedType:
 		switch v.NamedType.GetName() {
 		case "Int":
+			if nullable {
+				return jen.Op("*").Int()
+			}
 			return jen.Int()
 		case "Float":
+			if nullable {
+				return jen.Op("*").Float64()
+			}
 			return jen.Float64()
 		case "String":
+			if nullable {
+				return jen.Op("*").String()
+			}
 			return jen.String()
 		case "Boolean":
+			if nullable {
+				return jen.Op("*").Bool()
+			}
 			return jen.Bool()
 		case "ID":
+			if nullable {
+				return jen.Op("*").String()
+			}
 			return jen.String()
 		default:
 			// custom scalar
