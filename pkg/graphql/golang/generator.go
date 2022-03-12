@@ -4,7 +4,6 @@ import (
 	"github.com/dave/jennifer/jen"
 	"github.com/samlitowitz/graphqlc-gen-echo/pkg/graphqlc/echo"
 	cfgPkg "github.com/samlitowitz/graphqlc-gen-go/pkg/graphql/golang/config"
-	typPkg "github.com/samlitowitz/graphqlc-gen-go/pkg/graphql/golang/type"
 	"github.com/samlitowitz/graphqlc/pkg/graphqlc"
 	"strings"
 )
@@ -14,7 +13,6 @@ type Generator struct {
 
 	config   *Config
 	genFiles map[string]bool
-	typeMap  map[string]typPkg.Definition
 }
 
 func New() *Generator {
@@ -47,7 +45,6 @@ func (g *Generator) CommandLineArguments(parameter string) {
 func (g *Generator) GenerateAllFiles() {
 	// Go type definitions
 	g.Reset()
-	//g.writeFileHeader()
 	f := jen.NewFile(g.config.Package)
 	g.writeTypeDefinitions(f)
 	g.Response.File = append(g.Response.File, &graphqlc.CodeGeneratorResponse_File{
@@ -74,35 +71,6 @@ func (g *Generator) GenerateAllFiles() {
 	//	Content: g.String(),
 	//})
 }
-
-//func (g *Generator) writeFileHeader() {
-//	_, err := g.WriteString("// DO NOT EDIT!!!\n")
-//	if err != nil {
-//		g.Error(err)
-//	}
-//
-//	_, err = g.WriteString("package " + g.config.Package + "\n")
-//	if err != nil {
-//		g.Error(err)
-//	}
-//}
-//
-//func (g *Generator) writeImports(packages []string) {
-//	_, err := g.WriteString("import (")
-//	if err != nil {
-//		g.Error(err)
-//	}
-//	for _, pkg := range packages {
-//		_, err = g.WriteString("\t\"" + pkg + "\"")
-//		if err != nil {
-//			g.Error(err)
-//		}
-//	}
-//	_, err = g.WriteString(")\n")
-//	if err != nil {
-//		g.Error(err)
-//	}
-//}
 
 //func (g *Generator) writeRepositoryInterfaces() {
 //	if g.genFiles == nil {
@@ -147,7 +115,6 @@ func (g *Generator) writeTypeDefinitions(f *jen.File) {
 	if g.genFiles == nil {
 		g.genFiles = buildGenFilesMap(g.Request.FileToGenerate)
 	}
-
 	unionTypesMap := make(map[string]map[string]struct{})
 
 	for _, fd := range g.Request.GraphqlFile {
@@ -237,45 +204,12 @@ func (g *Generator) writeTypeDefinitions(f *jen.File) {
 				continue
 			}
 
-			for union, _  := range unions {
+			for union := range unions {
 				f.Func().Params(
 					jen.Id("o").Id(objDef.GetName()),
 				).Id("is" + union).Params().Block()
 			}
 		}
-		//for _, unionDef := range fd.Unions {
-		//	if typDef, ok := g.typeMap[unionDef.GetName()]; !ok || typDef == nil {
-		//		def := &typPkg.GoUnionDefinition{
-		//			UnionTypeDefinitionDescriptorProto: unionDef,
-		//		}
-		//		g.typeMap[unionDef.GetName()] = def
-		//
-		//	}
-		//}
-		//
-		//for name, typDef := range g.typeMap {
-		//	switch def := typDef.(type) {
-		//	case *typPkg.GoEnumDefinition:
-		//		g.typeMap[name] = def
-		//
-		//	case *typPkg.GoInterfaceDefinition:
-		//		def.TypeMap = g.typeMap
-		//		g.typeMap[name] = def
-		//
-		//	case *typPkg.GoInputObjectDefinition:
-		//		def.TypeMap = g.typeMap
-		//		g.typeMap[name] = def
-		//
-		//	case *typPkg.GoObjectDefinition:
-		//		def.TypeMap = g.typeMap
-		//		g.typeMap[name] = def
-		//	}
-		//}
-		//
-		//g.writeImports(importPackages)
-		//for _, typDef := range g.typeMap {
-		//	g.WriteString(typDef.Definition() + "\n")
-		//}
 	}
 	f.Render(g)
 }
@@ -286,36 +220,6 @@ func buildGenFilesMap(filesToGenerate []string) map[string]bool {
 		genFiles[file] = true
 	}
 	return genFiles
-}
-
-func buildBaseTypeMap() map[string]typPkg.Definition {
-	return map[string]typPkg.Definition{
-		"Int": &typPkg.GoScalarDefinition{
-			ScalarTypeDefinitionDescriptorProto: &graphqlc.ScalarTypeDefinitionDescriptorProto{
-				Name: "string",
-			},
-		},
-		"Float": &typPkg.GoScalarDefinition{
-			ScalarTypeDefinitionDescriptorProto: &graphqlc.ScalarTypeDefinitionDescriptorProto{
-				Name: "float64",
-			},
-		},
-		"String": &typPkg.GoScalarDefinition{
-			ScalarTypeDefinitionDescriptorProto: &graphqlc.ScalarTypeDefinitionDescriptorProto{
-				Name: "string",
-			},
-		},
-		"Boolean": &typPkg.GoScalarDefinition{
-			ScalarTypeDefinitionDescriptorProto: &graphqlc.ScalarTypeDefinitionDescriptorProto{
-				Name: "bool",
-			},
-		},
-		"ID": &typPkg.GoScalarDefinition{
-			ScalarTypeDefinitionDescriptorProto: &graphqlc.ScalarTypeDefinitionDescriptorProto{
-				Name: "string",
-			},
-		},
-	}
 }
 
 func getGoType(typDef *graphqlc.TypeDescriptorProto, customTypes map[string]cfgPkg.ScalarType, nullable bool) *jen.Statement {
