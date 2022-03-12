@@ -1,8 +1,10 @@
 package golang
 
 import (
+	"fmt"
 	"github.com/samlitowitz/graphqlc-gen-echo/pkg/graphqlc/echo"
 	cfgPkg "github.com/samlitowitz/graphqlc-gen-go/pkg/graphql/golang/config"
+	"github.com/samlitowitz/graphqlc-gen-go/pkg/graphql/golang/repository"
 	typPkg "github.com/samlitowitz/graphqlc-gen-go/pkg/graphql/golang/type"
 	"github.com/samlitowitz/graphqlc/pkg/graphqlc"
 )
@@ -43,12 +45,21 @@ func (g *Generator) CommandLineArguments(parameter string) {
 }
 
 func (g *Generator) GenerateAllFiles() {
-	// Go definitions (types and repository interfaces)
+	// Go type definitions
 	g.Reset()
 	g.writeFileHeader()
-	g.writeGoTypeDefinitions()
+	g.writeTypeDefinitions()
 	g.Response.File = append(g.Response.File, &graphqlc.CodeGeneratorResponse_File{
-		Name:    g.config.Output + "_go.go",
+		Name:    g.config.Output + "_types.go",
+		Content: g.String(),
+	})
+
+	// Go repository interface definitions
+	g.Reset()
+	g.writeFileHeader()
+	g.writeRepositoryInterfaces()
+	g.Response.File = append(g.Response.File, &graphqlc.CodeGeneratorResponse_File{
+		Name:    g.config.Output + "_types.go",
 		Content: g.String(),
 	})
 
@@ -92,7 +103,46 @@ func (g *Generator) writeImports(packages []string) {
 	}
 }
 
-func (g *Generator) writeGoTypeDefinitions() {
+func (g *Generator) writeRepositoryInterfaces() {
+	if g.genFiles == nil {
+		g.genFiles = buildGenFilesMap(g.Request.FileToGenerate)
+	}
+
+	repoDefs := make(map[string]map[string]*repository.Function)
+
+	for _, fd := range g.Request.GraphqlFile {
+		if _, ok := g.genFiles[fd.Name]; !ok {
+			continue
+		}
+		for _, objDef := range fd.Objects {
+			if _, ok := g.typeMap[objDef.GetName()]; !ok {
+				g.Error(fmt.Errorf("%s missing type definition", objDef.GetName()))
+			}
+
+			for _, fieldDef := range objDef.Fields {
+				if len(fieldDef.Arguments) == 0 {
+					continue
+				}
+				repoFnDefs, ok := repoDefs[fieldDef.Type.String()]
+				if !ok {
+					repoDef := repository.NewDefinition(objDef.G)
+					repoDefs[objDef.GetName()] = repoDef
+				}
+				repoFnDef := &repository.Function{FieldDefinitionDescriptorProto: fieldDef}
+				if _, ok := repoFnDefs[string(repoFnDef.Hash())]; ok {
+					continue
+				}
+				repoFnDefs[string(repoFnDef.Hash())] = repoFnDef
+			}
+		}
+	}
+
+	for typName, repoFnDefs := range repoDefs {
+
+	}
+}
+
+func (g *Generator) writeTypeDefinitions() {
 	if g.genFiles == nil {
 		g.genFiles = buildGenFilesMap(g.Request.FileToGenerate)
 	}
