@@ -155,23 +155,6 @@ func (g *Generator) writeTypeDefinitions(f *jen.File) {
 			continue
 		}
 
-		//importPackages := make([]string, 0)
-		//
-		//for _, scalarDef := range fd.Scalars {
-		//	var customType *cfgPkg.ScalarType
-		//	if _, ok := g.config.ScalarMap[scalarDef.GetName()]; ok {
-		//		customType = &cfgPkg.ScalarType{}
-		//		*customType = g.config.ScalarMap[scalarDef.GetName()]
-		//		importPackages = append(importPackages, customType.Package)
-		//	}
-		//	if typDef, ok := g.typeMap[scalarDef.GetName()]; !ok || typDef == nil {
-		//		def := &typPkg.GoScalarDefinition{
-		//			ScalarTypeDefinitionDescriptorProto: scalarDef,
-		//			CustomType:                          customType,
-		//		}
-		//		g.typeMap[scalarDef.GetName()] = def
-		//	}
-		//}
 		for _, enumDef := range fd.GetEnums() {
 			enumValues := enumDef.GetValues()
 			f.Type().Id(enumDef.GetName()).Int()
@@ -189,7 +172,7 @@ func (g *Generator) writeTypeDefinitions(f *jen.File) {
 			fnDefs := make(jen.Statement, 0, len(fields))
 			for _, field := range fields {
 				typ := field.GetType()
-				stmt := jen.Id(strings.Title(field.GetName())).Params().Add(getGoType(typ, g.config.ScalarMap, true))
+				stmt := jen.Id("Get" + strings.Title(field.GetName())).Params().Add(getGoType(typ, g.config.ScalarMap, true))
 				fnDefs = append(fnDefs, stmt)
 			}
 			f.Type().Id(ifaceDef.GetName()).Interface(fnDefs...)
@@ -204,20 +187,37 @@ func (g *Generator) writeTypeDefinitions(f *jen.File) {
 			}
 			f.Type().Id(iObjDef.GetName()).Struct(fieldDefs...)
 		}
-		//for _, objDef := range fd.Objects {
-		//	if objDef.GetName() == fd.Schema.Mutation.GetName() {
-		//		continue
-		//	}
-		//	if objDef.GetName() == fd.Schema.Query.GetName() {
-		//		continue
-		//	}
-		//	if typDef, ok := g.typeMap[objDef.GetName()]; !ok || typDef == nil {
-		//		def := &typPkg.GoObjectDefinition{
-		//			ObjectTypeDefinitionDescriptorProto: objDef,
-		//		}
-		//		g.typeMap[objDef.GetName()] = def
-		//	}
-		//}
+		for _, objDef := range fd.Objects {
+			if objDef.GetName() == fd.Schema.Mutation.GetName() {
+				continue
+			}
+			if objDef.GetName() == fd.Schema.Query.GetName() {
+				continue
+			}
+			fields := objDef.GetFields()
+			fieldDefs := make(jen.Statement, 0, len(fields))
+			for _, field := range fields {
+				typ := field.GetType()
+				stmt := jen.Id(strings.Title(field.GetName())).Add(getGoType(typ, g.config.ScalarMap, true))
+				fieldDefs = append(fieldDefs, stmt)
+			}
+			f.Type().Id(objDef.GetName()).Struct(fieldDefs...)
+
+			ifaces := objDef.GetImplements()
+			for _, iface := range ifaces {
+				ifaceFields := iface.GetFields()
+				for _, ifaceField := range ifaceFields {
+					typ := ifaceField.GetType()
+					f.Func().Params(
+						jen.Id("o").Id(objDef.GetName()),
+					).Id("Get" + strings.Title(ifaceField.GetName())).Params().Add(getGoType(typ, g.config.ScalarMap, true)).Block(
+						jen.Return(
+							jen.Id("o").Dot(strings.Title(ifaceField.GetName())),
+						),
+					)
+				}
+			}
+		}
 		//for _, unionDef := range fd.Unions {
 		//	if typDef, ok := g.typeMap[unionDef.GetName()]; !ok || typDef == nil {
 		//		def := &typPkg.GoUnionDefinition{
